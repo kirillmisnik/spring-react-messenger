@@ -79,6 +79,10 @@ public class User implements UserDetails {
         return !getAccountType().equals(AccountType.BLOCKED);
     }
 
+    public boolean isAdmin() {
+        return getAccountType().equals(AccountType.ADMIN);
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority(getAccountType().name());

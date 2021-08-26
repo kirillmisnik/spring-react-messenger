@@ -20,6 +20,9 @@ public class UserService implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException(String.format("User %s not found", s));
         }
+        if (!user.isAccountNonLocked()) {
+            throw new RuntimeException(String.format("User %s is blocked", s));
+        }
         return user;
     }
 }
