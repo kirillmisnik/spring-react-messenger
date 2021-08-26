@@ -1,9 +1,13 @@
 package edu.netcracker.messenger.controller.api.user;
 
+import edu.netcracker.messenger.model.chat.Chat;
+import edu.netcracker.messenger.model.message.Message;
+import edu.netcracker.messenger.model.message.MessageRepository;
 import edu.netcracker.messenger.model.user.AccountType;
 import edu.netcracker.messenger.model.user.User;
 import edu.netcracker.messenger.model.user.exception.UserNotFoundException;
 import edu.netcracker.messenger.model.user.UserRepository;
+import edu.netcracker.messenger.view.chat.ChatListView;
 import edu.netcracker.messenger.view.user.UserPrivateView;
 import edu.netcracker.messenger.view.user.UserPublicView;
 import edu.netcracker.messenger.view.user.UserView;
@@ -25,8 +29,11 @@ public class UserApiController {
 
     private final UserRepository userRepository;
 
-    UserApiController(UserRepository userRepository) {
+    private final MessageRepository messageRepository;
+
+    UserApiController(UserRepository userRepository, MessageRepository messageRepository) {
         this.userRepository = userRepository;
+        this.messageRepository = messageRepository;
     }
 
     /**
@@ -95,10 +102,34 @@ public class UserApiController {
     Long blockUser(Principal principal, @PathVariable Long id) {
         throwIfUserNotExists(id);
         if (!loggedInUser(principal).isAdmin()) {
-            throw new AccessDeniedException("You don't have permission to block usersd");
+            throw new AccessDeniedException("You don't have permission to block users");
         }
         userRepository.getById(id).setAccountType(AccountType.BLOCKED);
         return id;
+    }
+
+    /**
+     * Returns a list of all chats available to user.
+     * @param principal logged in user
+     * @param id user id
+     * @return list of chats
+     */
+    @GetMapping("/{id}/chats")
+    public @ResponseBody
+    List<ChatListView> getUserChats(Principal principal, @PathVariable Long id) {
+        throwIfUserNotExists(id);
+        if (!hasPermission(principal, id)) {
+            throw new AccessDeniedException(
+                    String.format("You don't have permission to access chat(s) of the user with id: %d", id));
+        }
+
+        List<ChatListView> chatList = new ArrayList<>();
+        for (Chat chat : loggedInUser(principal).getChats()) {
+            Message lastMessage = messageRepository.latestInChat(chat.getId());
+            chatList.add(new ChatListView(chat.getId(), chat.getChatName(), chat.getChatPictureId(),
+                    lastMessage != null ? lastMessage.getText() : null));
+        }
+        return chatList;
     }
 
     /**
