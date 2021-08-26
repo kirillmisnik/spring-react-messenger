@@ -1,6 +1,7 @@
 package edu.netcracker.messenger.model.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import edu.netcracker.messenger.model.chat.Chat;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
@@ -58,6 +59,14 @@ public class User implements UserDetails {
 
     @Column(name = "last_online_date")
     @Getter @Setter private LocalDateTime lastOnlineDate;
+
+    @ManyToMany(cascade = { CascadeType.ALL })
+    @JoinTable(
+            name = "chat_members",
+            joinColumns = { @JoinColumn(name = "user_id") },
+            inverseJoinColumns = { @JoinColumn(name = "chat_id") }
+    )
+    @Getter private List<Chat> chats;
 
     @Override
     public boolean isAccountNonExpired() {
