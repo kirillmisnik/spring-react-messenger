@@ -10,11 +10,14 @@ Netcracker EDU (Summer 2021) - Выпускной проект
 
 ### Сборка и запуск проекта
 
-`db-create.sh` - для создания PostgreSQL БД
-
-`mvn install`
-
-`mvn spring-boot:run`
+Путь | Команда | Описание
+---- | ---- | ----
+/react-web | `npm install` | Установка зависимостей node.js
+/react-web | `npm watch` | Сборка react-приложения в единый .js
+/scripts | `move-to-resources.sh` | Перенос собранного файла в ресурсы проекта
+/scripts | `db-create.sh` | Создание PostgreSQL БД
+/ | `mvn install` | Установка зависимостей приложения
+/ | `mvn spring-boot:run` | Запуск spring-boot
 
 ### API
 
