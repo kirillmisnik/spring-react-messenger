@@ -126,10 +126,15 @@ public class UserApiController {
         List<ChatListView> chatList = new ArrayList<>();
         for (Chat chat : loggedInUser(principal).getChats()) {
             Message lastMessage = messageRepository.latestInChat(chat.getId());
-            chatList.add(new ChatListView(chat.getId(), chat.getChatName(), chat.getChatPictureId(),
+            chatList.add(new ChatListView(chat, loggedInUser(principal),
                     lastMessage != null ? lastMessage.getText() : null));
         }
         return chatList;
+    }
+
+    @GetMapping("/whoami")
+    public @ResponseBody Long whoAmI(Principal principal) {
+        return loggedInUser(principal).getId();
     }
 
     /**

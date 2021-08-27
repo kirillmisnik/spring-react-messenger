@@ -1,5 +1,6 @@
 package edu.netcracker.messenger.controller;
 
+import edu.netcracker.messenger.model.chat.exception.ChatNotFoundException;
 import edu.netcracker.messenger.model.user.exception.UserAlreadyExistsException;
 import edu.netcracker.messenger.model.user.exception.UserNotFoundException;
 import edu.netcracker.messenger.view.ExceptionView;
@@ -34,5 +35,12 @@ public class ExceptionHandlingController {
     public @ResponseBody
     ExceptionView accessDeniedException(AccessDeniedException e) {
         return new ExceptionView(e.getMessage(), Collections.singletonList(e.getMessage()), HttpStatus.FORBIDDEN);
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(ChatNotFoundException.class)
+    public @ResponseBody
+    ExceptionView chatNotFoundExceptionHandler(ChatNotFoundException e) {
+        return new ExceptionView(e.getMessage(), e.getErrors(), HttpStatus.NOT_FOUND);
     }
 }
