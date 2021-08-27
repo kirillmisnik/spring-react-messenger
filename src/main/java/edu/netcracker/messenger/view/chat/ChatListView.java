@@ -1,13 +1,26 @@
 package edu.netcracker.messenger.view.chat;
 
-import lombok.AllArgsConstructor;
+import edu.netcracker.messenger.model.chat.Chat;
+import edu.netcracker.messenger.model.chat.ChatType;
+import edu.netcracker.messenger.model.user.User;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-@Getter @NoArgsConstructor @AllArgsConstructor
+@Getter
 public class ChatListView {
-    private Long chatId;
-    private String chatName;
-    private Long chatPictureId;
-    private String lastMessage;
+    private final Long id;
+    private String name;
+    private final Long pictureId;
+    private final String lastMessage;
+
+    public ChatListView(Chat chat, User user, String lastMessage) {
+        id = chat.getId();
+        name = chat.getChatName();
+        pictureId = chat.getChatPictureId();
+        for (User member : chat.getMembers()) {
+            if (chat.getChatType().equals(ChatType.PERSONAL) && member != user) {
+                name = member.getFirstName() + ' ' + member.getLastName();
+            }
+        }
+        this.lastMessage = lastMessage;
+    }
 }

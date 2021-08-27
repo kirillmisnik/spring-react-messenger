@@ -5,11 +5,10 @@ import Message from "./Message";
 import useInterval from "./UseInterval"
 import './App.css'
 
-const MY_USER_ID = 1;
-
 export default function App() {
 
     useEffect(() => {
+        whoAmI()
         getConversations()
     },[])
 
@@ -18,18 +17,28 @@ export default function App() {
         getMessages()
     }, 100);
 
+    // Who am I
+
+    const [userId, setUserId] = useState(0);
+
+    const whoAmI = () => {
+        axios.get('http://localhost:8080/api/user/whoami').then(response => {
+            setUserId(response.data)
+        });
+    }
+
     // Conversations
 
     const [conversations, setConversations] = useState([]);
     const [chat, setChat] = useState(0);
 
     const getConversations = () => {
-        axios.get('http://localhost:8080/api/1.0/user/1/chats').then(response => {
+        axios.get('http://localhost:8080/api/user/' + userId + '/chats').then(response => {
             let newConversations = response.data.map(result => {
                 return {
-                    id: result.chatId,
+                    id: result.id,
                     photo: 'https://component-creator.com/images/testimonials/defaultuser.png',
-                    name: result.chatName,
+                    name: result.name,
                     text: result.lastMessage
                 };
             });
@@ -42,7 +51,7 @@ export default function App() {
     const [messages, setMessages] = useState([])
 
     const getMessages = () => {
-        axios.get('http://localhost:8080/api/1.0/chat/' + chat + '/messages/all').then(response => {
+        axios.get('http://localhost:8080/api/chat/' + chat + '/messages/all').then(response => {
             let newMessages = response.data.map(result => {
                 return {
                     id: result.messageId,
@@ -64,7 +73,7 @@ export default function App() {
             let previous = messages[i - 1];
             let current = messages[i];
             let next = messages[i + 1];
-            let isMine = current.author === MY_USER_ID;
+            let isMine = current.author === userId;
             let currentMoment = moment(current.timestamp);
             let prevBySameAuthor = false;
             let nextBySameAuthor = false;
@@ -128,7 +137,7 @@ export default function App() {
         scrollToBottom()
         axios({
             method: 'post',
-            url: 'http://localhost:8080/api/1.0/chat/' + chat,
+            url: 'http://localhost:8080/api/chat/' + chat,
             data: {
                 text: message
             }
@@ -140,10 +149,10 @@ export default function App() {
     const [chatInfo, setChatInfo] = useState(new Map())
 
     const getChatInfo = (id) => {
-        axios.get('http://localhost:8080/api/1.0/chat/' + id).then(response => {
+        axios.get('http://localhost:8080/api/chat/' + id).then(response => {
             let newChatInfo = new Map()
-            newChatInfo.set("chatName", response.data.chatName)
-            newChatInfo.set("chatType", response.data.chatType)
+            newChatInfo.set("chatName", response.data.name)
+            newChatInfo.set("chatType", response.data.type)
             setChatInfo(newChatInfo)
         });
     }
