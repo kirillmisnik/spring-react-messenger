@@ -194,7 +194,7 @@ export default function App() {
                     <div>
                         {
                             conversations.map(conversation =>
-                                <div className="conversation-list-item" onClick={()=>currentChat(conversation.id) }>
+                                <div className="conversation-list-item" onClick={ ()=>currentChat(conversation.id) }>
                                     <img className="conversation-photo" src={ conversation.photo } alt="conversation" />
                                     <div className="conversation-info">
                                         <h1 className="conversation-title">{ conversation.name }</h1>

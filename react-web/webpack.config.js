@@ -7,7 +7,7 @@ module.exports = {
     mode: 'development',
     output: {
         path: __dirname,
-        filename: 'bundle.js'
+        filename: 'react-app.js'
     },
     module: {
         rules: [
