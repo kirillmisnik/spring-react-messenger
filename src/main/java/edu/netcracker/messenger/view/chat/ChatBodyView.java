@@ -8,13 +8,13 @@ import java.util.List;
 
 @Getter @NoArgsConstructor @AllArgsConstructor
 public class ChatBodyView {
-    private List<Long> chatMembersId;
+    private List<String> chatMembersUsername;
 
     private String chatName;
 
     private Long chatPictureId;
 
-    public ChatBodyView(List<Long> chatMembersId) {
-        this.chatMembersId = chatMembersId;
+    public ChatBodyView(List<String> chatMembersUsername) {
+        this.chatMembersUsername = chatMembersUsername;
     }
 }

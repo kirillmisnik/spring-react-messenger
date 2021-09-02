@@ -43,11 +43,13 @@ public class UserApiController {
      */
     @GetMapping("/all")
     public @ResponseBody
-    List<UserView> allUsers() {
+    List<UserView> allUsers(Principal principal) {
         throwIfNoUserExists();
         List<UserView> users = new ArrayList<>();
         for (User user : userRepository.findAll()) {
-            users.add(new UserPublicView(user));
+            if (!loggedInUser(principal).getId().equals(user.getId())) {
+                users.add(new UserPublicView(user));
+            }
         }
         return users;
     }

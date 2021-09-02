@@ -1,9 +1,12 @@
 import React, {useEffect, useState} from 'react';
+import {Modal, Button, Select, Input} from 'antd';
+import 'antd/dist/antd.css';
 import axios from "axios";
 import moment from "moment";
 import Message from "./Message";
 import useInterval from "./UseInterval"
 import './App.css'
+import {InfoCircleOutlined, SettingOutlined, UsergroupAddOutlined} from "@ant-design/icons";
 
 export default function App() {
 
@@ -30,14 +33,14 @@ export default function App() {
     // Conversations
 
     const [conversations, setConversations] = useState([]);
-    const [chat, setChat] = useState(0);
+    const [chat, setChat] = useState(1);
 
     const getConversations = () => {
         axios.get('http://localhost:8080/api/user/' + userId + '/chats').then(response => {
             let newConversations = response.data.map(result => {
                 return {
                     id: result.id,
-                    photo: 'https://component-creator.com/images/testimonials/defaultuser.png',
+                    photo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRr5CDP3rQWwrz-BKdGJwxvZyaXYldKlnCz-qIrjDd116lf5ZbBrE0ySixHibrS0VH0lNU&usqp=CAU',
                     name: result.name,
                     text: result.lastMessage
                 };
@@ -169,14 +172,141 @@ export default function App() {
         messagesEnd.scrollIntoView({ behavior: "smooth" });
     }
 
+    // Settings
+
+    const [isSettingsModalVisible, setIsSettingsModalVisible] = useState(false);
+
+    const showSettingsModal = () => {
+        setIsSettingsModalVisible(true);
+    };
+
+    const handleSettingsCancel = () => {
+        setIsSettingsModalVisible(false);
+    };
+
+    // Create chat
+
+    const [isCreateChatModalVisible, setIsCreateChatModalVisible] = useState(false);
+
+    const showCreateChatModal = () => {
+        getNewConversations()
+        setIsCreateChatModalVisible(true);
+    };
+
+    const handleCreateChatOk = () => {
+        setSelected([])
+        setIsCreateChatModalVisible(false);
+        createNewConversation()
+    };
+
+    const handleCreateChatCancel = () => {
+        setIsCreateChatModalVisible(false);
+    };
+
+    const { Option } = Select;
+
+    const [children, setChildren] = useState([]);
+
+    const getNewConversations = () => {
+        const newChildren = [];
+        axios.get('http://localhost:8080/api/user/all').then(response => {
+            response.data.map(result => {
+                newChildren.push(<Option key={result.username}>{result.username}</Option>)
+            });
+            setChildren([...newChildren])
+        });
+    }
+
+    const createNewConversation = () => {
+        const data = { chatMembersUsername: participants, chatName: chatName };
+        axios.post('http://localhost:8080/api/chat/create', data)
+            .then(response => {
+                setChat(response.data.id)
+                getChatInfo(response.data.id)
+            });
+    }
+
+    const [participants, setParticipants] = useState([]);
+
+    const [open, setOpen] = useState(false);
+
+    function handleChange(value) {
+        setParticipants(value);
+        setSelected(value);
+        setOpen(false)
+        if (value.length > 1) {
+            setIsChatNameSelectorVisible(false)
+        } else {
+            setIsChatNameSelectorVisible(true)
+        }
+    }
+
+    const [isChatNameSelectorVisible, setIsChatNameSelectorVisible] = useState(true);
+
+    const [chatName, setChatName] = useState('Group chat');
+
+    // Chat info
+
+    const [isChatInfoModalVisible, setIsChatInfoModalVisible] = useState(false);
+
+    const showChatInfoModal = () => {
+        setIsChatInfoModalVisible(true);
+    };
+
+    const handleChatInfoCancel = () => {
+        setIsChatInfoModalVisible(false);
+    };
+
+    const handleFocus = () => {
+        setOpen(true)
+    };
+
+    const [selected, setSelected] = useState()
+
+
     return (
         <div className="messenger">
+
+            <Modal title="Settings" visible={isSettingsModalVisible} footer={[]} onCancel={handleSettingsCancel}>
+                User id: {userId}
+                <Button danger type="text">
+                    Log out
+                </Button>
+            </Modal>
+
+            <Modal title="Create chat" visible={isCreateChatModalVisible} onOk={handleCreateChatOk} onCancel={handleCreateChatCancel}>
+                Please select users:
+                <Select
+                    mode="multiple"
+                    allowClear
+                    style={{ width: '100%' }}
+                    placeholder="Start typing username"
+                    onChange={handleChange}
+                    value={selected}
+                    onInputKeyDown={handleFocus}
+                    open={open}
+                >
+                    {children}
+                </Select>
+                <br/>
+                <br/>
+                Chat name <i>(group only)</i>:
+                <Input placeholder="e.g. New group chat" disabled={isChatNameSelectorVisible} onChange={event => setChatName(event.target.value)} />
+            </Modal>
+
+            <Modal title="Chat info" visible={isChatInfoModalVisible} footer={[]} onCancel={handleChatInfoCancel}>
+                {chatInfo.get("chatName")}
+                <Button danger type="text">
+                    Delete chat
+                </Button>
+            </Modal>
 
             <div className="scrollable sidebar">
                 <div className="conversation-list">
                     <div className="toolbar">
                         <div className="left-items">
-                            <i className='toolbar-button ion-ios-cog' />
+                            <Button type="text" size="large" onClick={showSettingsModal} icon={<SettingOutlined style={{ fontSize: '25px', color: '#08c' }} />}>
+                            </Button>
                         </div>
                         <h1 className="toolbar-title">
                             <div className="conversation-search">
@@ -188,9 +318,11 @@ export default function App() {
                             </div>
                         </h1>
                         <div className="right-items">
-                            <i className='toolbar-button ion-ios-add-circle-outline' />
+                            <Button type="text" size="large" onClick={showCreateChatModal} icon={<UsergroupAddOutlined style={{ fontSize: '25px', color: '#08c' }} />}>
+                            </Button>
                         </div>
                     </div>
+
                     <div>
                         {
                             conversations.map(conversation =>
@@ -204,6 +336,7 @@ export default function App() {
                             )
                         }
                     </div>
+
                 </div>
             </div>
 
@@ -215,7 +348,8 @@ export default function App() {
                             { chatInfo.get("chatName") }
                         </h1>
                         <div className="right-items">
-                            <i className='toolbar-button ion-ios-information-circle-outline' />
+                            <Button type="text" size="large" onClick={showChatInfoModal} icon={<InfoCircleOutlined style={{ fontSize: '25px', color: '#08c' }} />}>
+                            </Button>
                         </div>
                     </div>
                     <div className="message-list-container">{ renderMessages() }</div>

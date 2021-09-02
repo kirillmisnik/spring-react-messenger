@@ -51,7 +51,7 @@ public class ChatApiController {
     @PostMapping("/create")
     public @ResponseBody
     ChatView createChat(Principal principal, @RequestBody ChatBodyView chatBody) {
-        List<User> members = findUsersById(principal, chatBody);
+        List<User> members = findUsersByUsername(principal, chatBody);
         Chat chat = new Chat(members, chatBody.getChatName(), chatBody.getChatPictureId());
         if (chat.isPersonal()) {
             checkIfPersonalChatExists(principal, members);
@@ -163,14 +163,14 @@ public class ChatApiController {
      * @return list of users
      * @throws UserNotFoundException no user found with provided id
      */
-    private List<User> findUsersById(Principal principal, ChatBodyView chatBody) throws UserNotFoundException {
+    private List<User> findUsersByUsername(Principal principal, ChatBodyView chatBody) throws UserNotFoundException {
         List<User> users = new ArrayList<>(Collections.singletonList(loggedInUser(principal)));
         List<Long> errors = new ArrayList<>();
-        for (Long userId : chatBody.getChatMembersId()) {
-            if (userRepository.findById(userId).isEmpty()) {
-                errors.add(userId);
+        for (String participantUsername : chatBody.getChatMembersUsername()) {
+            if (userRepository.getByUsername(participantUsername) == null) {
+                errors.add(userRepository.getByUsername(participantUsername).getId());
             } else {
-                users.add(userRepository.getById(userId));
+                users.add(userRepository.getByUsername(participantUsername));
             }
         }
         if (!errors.isEmpty()) {
