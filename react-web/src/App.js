@@ -13,16 +13,18 @@ export default function App() {
     useEffect(() => {
         whoAmI()
         getConversations()
-    },[])
+    },[]);
 
     useInterval(() => {
         getConversations()
-        getMessages()
-    }, 100);
+        if (chat != null) {
+            getMessages()
+        }
+    }, 2000);
 
     // Who am I
 
-    const [userId, setUserId] = useState(0);
+    const [userId, setUserId] = useState();
 
     const whoAmI = () => {
         axios.get('http://localhost:8080/api/user/whoami').then(response => {
@@ -33,7 +35,7 @@ export default function App() {
     // Conversations
 
     const [conversations, setConversations] = useState([]);
-    const [chat, setChat] = useState(1);
+    const [chat, setChat] = useState();
 
     const getConversations = () => {
         axios.get('http://localhost:8080/api/user/' + userId + '/chats').then(response => {
@@ -145,6 +147,11 @@ export default function App() {
                 text: message
             }
         })
+        getMessage()
+    }
+
+    const getMessage = () => {
+        getMessages()
     }
 
     // Chat info
@@ -163,6 +170,7 @@ export default function App() {
     const currentChat = (id) => {
         setChat(id)
         getChatInfo(id)
+        getConversations()
         scrollToBottom()
     }
 
@@ -262,7 +270,6 @@ export default function App() {
     };
 
     const [selected, setSelected] = useState()
-
 
     return (
         <div className="messenger">
