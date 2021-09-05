@@ -3,7 +3,7 @@ import {Modal, Button, Select, Input} from 'antd';
 import 'antd/dist/antd.css';
 import axios from "axios";
 import moment from "moment";
-import Message from "./Message";
+import Index from "./components/Message/Message";
 import useInterval from "./UseInterval"
 import './App.css'
 import {InfoCircleOutlined, SettingOutlined, UsergroupAddOutlined} from "@ant-design/icons";
@@ -111,7 +111,7 @@ export default function App() {
             }
 
             tempMessages.push(
-                <Message
+                <Index
                     key={i}
 
                     chatType={chatInfo.get("chatType")}
