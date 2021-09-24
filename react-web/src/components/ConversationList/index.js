@@ -5,6 +5,7 @@ import './ConversationList.css';
 import useInterval from "../../UseInterval";
 import Toolbar from "../Toolbar";
 import CreateChat from "../CreateChat";
+import Settings from "../Settings";
 
 export default function ConversationList(props) {
 
@@ -36,8 +37,7 @@ export default function ConversationList(props) {
     return (
         <div className="conversation-list">
             <Toolbar
-                // leftItem={[ ]}
-                // title={}
+                leftItem={<Settings userId={userId}/>}
                 rightItem={<CreateChat getChatId={props.getChatId} />}
             />
             {

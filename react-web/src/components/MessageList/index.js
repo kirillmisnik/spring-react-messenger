@@ -6,14 +6,20 @@ import useInterval from "../../UseInterval";
 import Compose from "../Compose";
 
 import './MessageList.css';
+import Toolbar from "../Toolbar";
+import Settings from "../Settings";
+import CreateChat from "../CreateChat";
+import ChatInfo from "../ChatInfo";
 
 export default function MessageList(props) {
 
     const [messages, setMessages] = useState([])
+    const [chatInfo, setChatInfo] = useState(new Map())
     const {userId, chatId} = props
 
     useEffect(() => {
         getMessages()
+        getChatInfo()
     },[chatId])
 
     useInterval(() => {
@@ -92,8 +98,23 @@ export default function MessageList(props) {
         return tempMessages;
     }
 
+    const getChatInfo = () => {
+        axios.get('http://localhost:8080/api/chat/' + chatId).then(response => {
+            let newChatInfo = new Map()
+            newChatInfo.set("chatId", response.data.id)
+            newChatInfo.set("chatName", response.data.name)
+            newChatInfo.set("chatType", response.data.type)
+            setChatInfo(newChatInfo)
+        });
+    }
+
     return (
         <div className="message-list">
+            <Toolbar
+                title={chatInfo.get("chatName")}
+                rightItem={<ChatInfo getChatId={props.getChatId}
+                                     chatInfo={chatInfo} />}
+            />
             <div className="message-list-container">{renderMessages()}</div>
             <Compose chatId={chatId}/>
         </div>

@@ -86,8 +86,8 @@ public class UserApiController {
             throw new AccessDeniedException(
                     String.format("You don't have permission to delete user with id: %d", id));
         }
-        userRepository.deleteMessagesById(id); // Temporary
-        userRepository.deleteChatMemberById(id); // Temporary
+        userRepository.deleteMessagesById(id);
+        userRepository.deleteChatMemberById(id);
         userRepository.deleteById(id);
         return id;
     }

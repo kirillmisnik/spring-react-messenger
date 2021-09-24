@@ -14,6 +14,7 @@ import edu.netcracker.messenger.view.chat.ChatView;
 import edu.netcracker.messenger.view.message.MessageBodyView;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -122,10 +123,12 @@ public class ChatApiController {
      * @param chatId chat id
      * @return deleted chat id
      */
+    @Transactional
     @DeleteMapping("/{chatId}")
     public @ResponseBody Long deleteChat(Principal principal, @PathVariable Long chatId) {
         throwIfChatHasErrors(principal, chatId);
-        messageRepository.deleteAll(messageRepository.findMessages(chatId));
+        chatRepository.deleteMessagesById(chatId);
+        chatRepository.deleteChatById(chatId);
         chatRepository.deleteById(chatId);
         return chatId;
     }
@@ -180,7 +183,8 @@ public class ChatApiController {
     }
 
     private void checkIfPersonalChatExists(Principal principal, List<User> members) throws ChatAlreadyExistsException {
-        for (Chat c : loggedInUser(principal).getChats()) {
+        for (Chat c : chatRepository.getChatsByUserId(loggedInUser(principal).getId())) {
+            System.out.println(c.getChatName());
             if (c.getMembers().containsAll(members)) {
                 throw new ChatAlreadyExistsException();
             }
