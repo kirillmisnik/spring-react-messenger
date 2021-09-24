@@ -60,7 +60,7 @@ public class User implements UserDetails {
     @Column(name = "last_online_date")
     @Getter @Setter private LocalDateTime lastOnlineDate;
 
-    @ManyToMany(cascade = { CascadeType.ALL })
+    @ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.EAGER)
     @JoinTable(
             name = "chat_members",
             joinColumns = { @JoinColumn(name = "user_id") },

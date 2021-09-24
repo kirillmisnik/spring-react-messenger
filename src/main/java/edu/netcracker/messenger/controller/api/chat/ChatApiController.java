@@ -14,6 +14,7 @@ import edu.netcracker.messenger.view.chat.ChatView;
 import edu.netcracker.messenger.view.message.MessageBodyView;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -51,7 +52,7 @@ public class ChatApiController {
     @PostMapping("/create")
     public @ResponseBody
     ChatView createChat(Principal principal, @RequestBody ChatBodyView chatBody) {
-        List<User> members = findUsersById(principal, chatBody);
+        List<User> members = findUsersByUsername(principal, chatBody);
         Chat chat = new Chat(members, chatBody.getChatName(), chatBody.getChatPictureId());
         if (chat.isPersonal()) {
             checkIfPersonalChatExists(principal, members);
@@ -122,10 +123,12 @@ public class ChatApiController {
      * @param chatId chat id
      * @return deleted chat id
      */
+    @Transactional
     @DeleteMapping("/{chatId}")
     public @ResponseBody Long deleteChat(Principal principal, @PathVariable Long chatId) {
         throwIfChatHasErrors(principal, chatId);
-        messageRepository.deleteAll(messageRepository.findMessages(chatId));
+        chatRepository.deleteMessagesById(chatId);
+        chatRepository.deleteChatById(chatId);
         chatRepository.deleteById(chatId);
         return chatId;
     }
@@ -163,14 +166,14 @@ public class ChatApiController {
      * @return list of users
      * @throws UserNotFoundException no user found with provided id
      */
-    private List<User> findUsersById(Principal principal, ChatBodyView chatBody) throws UserNotFoundException {
+    private List<User> findUsersByUsername(Principal principal, ChatBodyView chatBody) throws UserNotFoundException {
         List<User> users = new ArrayList<>(Collections.singletonList(loggedInUser(principal)));
         List<Long> errors = new ArrayList<>();
-        for (Long userId : chatBody.getChatMembersId()) {
-            if (userRepository.findById(userId).isEmpty()) {
-                errors.add(userId);
+        for (String participantUsername : chatBody.getChatMembersUsername()) {
+            if (userRepository.getByUsername(participantUsername) == null) {
+                errors.add(userRepository.getByUsername(participantUsername).getId());
             } else {
-                users.add(userRepository.getById(userId));
+                users.add(userRepository.getByUsername(participantUsername));
             }
         }
         if (!errors.isEmpty()) {
@@ -180,7 +183,8 @@ public class ChatApiController {
     }
 
     private void checkIfPersonalChatExists(Principal principal, List<User> members) throws ChatAlreadyExistsException {
-        for (Chat c : loggedInUser(principal).getChats()) {
+        for (Chat c : chatRepository.getChatsByUserId(loggedInUser(principal).getId())) {
+            System.out.println(c.getChatName());
             if (c.getMembers().containsAll(members)) {
                 throw new ChatAlreadyExistsException();
             }
